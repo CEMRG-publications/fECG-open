@@ -11,7 +11,7 @@ license = {text = "MIT"}
 requires-python = ">=3.9"
 
 authors = [
-    {name = "Ludovica Cicci", email = "cicciludovica@gmail.com"},
+    {name = "Ludovica Cicci", email = "lcicci@imperial.ac.uk"},
     {name = "Steven Niederer"},
     {name = "Sian Chivers"},
     {name = "John Simpson"},
