@@ -17,7 +17,7 @@ Usage:
 Validation:
     python test_equivalence.py --validate --fast
 
-Requires: numpy, scipy, numba  (see requirements.txt)
+Requires: numpy, scipy, numba.  Install the package and its dependencies with: pip install ".[plot,test]"
 """
 
 import numpy as np
