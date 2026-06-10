@@ -35,32 +35,33 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 ## Quick Start
 
 ```matlab
-% Set input/output paths and run the pipeline on your recordings.
-% Edit the paths at the top of pipeline.m, then run:
-
-pipeline
+addpath(genpath('/path/to/fECG-open/matlab'))
 ```
 
-The script reads all `.ch1` files from `input_folder`, processes each recording in
-60-second segments, and writes one `.mat` file per recording to `output_folder`.
-
-Minimal synthetic example (generates a dummy file and processes it):
+Edit the input and output folder paths at the top of `pipeline.m`, then run:
 
 ```matlab
-% Write a dummy 300 Hz / 900 Hz four-channel recording (10 seconds each)
-for ch = 1:3
-    data = int32(randn(1, 3000) * 1000);
-    fid = fopen(sprintf('/tmp/TEST.ch%d', ch), 'w', 'l');
-    fwrite(fid, data, 'int32'); fclose(fid);
-end
-data = int32(randn(1, 9000) * 1000);
-fid = fopen('/tmp/TEST.ch4', 'w', 'l'); fwrite(fid, data, 'int32'); fclose(fid);
-
-% Run pipeline (edit input_folder / output_folder in pipeline.m first)
-% input_folder  = '/tmp';
-% output_folder = '/tmp/out';
 pipeline
 ```
+
+To verify your installation, set the following paths in `pipeline.m` and run:
+
+```matlab
+input_folder  = 'data/inputs/test_library';
+output_folder = 'data/outputs/test_library';
+pipeline
+```
+
+A sample 10-segment recording is provided in `data/inputs/test_library/` (`test.ch1` – `test.ch4`).
+
+The full sample recording (92 segments) can be processed by setting:
+
+```matlab
+input_folder  = 'data/inputs';
+output_folder = 'data/outputs';
+```
+
+A 92-segment recording is provided in `data/inputs/` (`recording.ch1` – `recording.ch4`).
 
 ## Library Structure
 

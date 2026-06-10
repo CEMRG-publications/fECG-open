@@ -38,46 +38,40 @@ pip install ".[plot,test]"
 ### Sequential pipeline
 
 ```bash
-python pipeline.py -i /path/to/input_folder -o /path/to/output_folder
+pip install ".[plot,test]"
 ```
 
-`input_folder` must contain four binary channel files per recording, named `<basename>.ch1` through `<basename>.ch4` (Monica DK format, little-endian int32). Channels 1–3 are expected at 300 Hz; channel 4 at 900 Hz. All are resampled to 1000 Hz internally.
+Input: four binary channel files per recording (`<basename>.ch1` – `.ch4`, Monica DK format).
 
-Minimal synthetic example:
-
-```python
-import numpy as np, os
-
-# Write a dummy 10-second recording (3000 samples at 300 Hz for ch1-3, 9000 at 900 Hz for ch4)
-os.makedirs('/tmp/fecg_in', exist_ok=True)
-for ch in range(1, 4):
-    (np.random.randn(3000) * 1000).astype(np.int32).tofile(f'/tmp/fecg_in/TEST.ch{ch}')
-(np.random.randn(9000) * 1000).astype(np.int32).tofile('/tmp/fecg_in/TEST.ch4')
-```
+To verify your installation, run the pipeline on the short test recording
+(10 segments, completes in a few minutes):
 
 ```bash
-python pipeline.py -i /tmp/fecg_in -o /tmp/fecg_out
+python pipeline.py -i data/inputs/test_library -o data/outputs/test_library
 ```
 
-Output: `/tmp/fecg_out/TEST.mat` — a MATLAB v7.3 / HDF5 file containing per-segment waveforms and beat annotations.
+The full sample recording (92 segments) can be processed with:
+
+```bash
+python pipeline.py -i data/inputs -o data/outputs
+```
+
+Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment
+waveforms and beat annotations. See the Output Format section for details.
 
 ### Parallel pipeline
 
-`pipeline_fast.py` distributes the 84 beat-extraction calls (6 channel-pair × 14 alpha-mix,
-when using NUM_CHANNEL=4 and alphaN=7) and the 84 bSQI-scoring calls across CPU cores via
-`ProcessPoolExecutor`, and pipelines the refinement pass to overlap with the next segment's
-search phase. The signal processing logic is otherwise identical to the sequential version.
+`pipeline_fast.py` distributes beat-extraction and bSQI-scoring calls across CPU cores
+via `ProcessPoolExecutor`. The signal processing logic is otherwise identical to the
+sequential version and produces bit-identical outputs.
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
-    python pipeline_fast.py -i /path/to/input_folder -o /path/to/output_folder
+    python pipeline_fast.py -i data/inputs/test_library -o data/outputs/test_library
 ```
 
-Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning its
-own threads inside each worker process, which would oversubscribe the CPU and reduce throughput.
-
-> **Validated:** `pipeline_fast.py` produces bit-identical outputs to the sequential
-> pipeline.
+Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning
+its own threads inside each worker process, which would oversubscribe the CPU.
 
 ## Library Structure
 

@@ -39,10 +39,21 @@ Full details on requirements, installation, usage, and API are provided in each 
 
 ## Quick Start
 
+A sample 10-segment recording is provided in `data/inputs/test_library` (`test.ch1` – `test.ch4`) to test the library installation. 
+A 92-segment recording is also provided in `data/inputs/` (`recording.ch1` – `recording.ch4`).
+
+Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment waveforms and beat annotations.
+
 ### MATLAB
 
 ```matlab
 addpath(genpath('/path/to/fECG-open/matlab'))
+```
+
+Set `input_folder = 'data/inputs/test_library'` and `output_folder = 'data/outputs/test_library'` in `pipeline.m`,
+then run:
+
+```matlab
 pipeline
 ```
 
@@ -50,11 +61,8 @@ pipeline
 
 ```bash
 pip install ".[plot,test]"
-python pipeline.py -i /path/to/input_folder -o /path/to/output_folder
+python pipeline.py -i data/inputs/test_library -o data/outputs/test_library
 ```
-
-Input: four binary channel files per recording (`<basename>.ch1` – `.ch4`, Monica DK format).
-Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment waveforms and beat annotations.
 
 ## Testing
 
