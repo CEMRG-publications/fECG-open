@@ -103,6 +103,11 @@ matlab/
         └── parsave_output_file.m      Save pipeline outputs to MAT-file (v7.3)
 ```
 
+## Output Format
+
+For a description of all output variables, see [Output Format](../README.md#output-format)
+in the top-level README.
+
 ## License
 
 MIT.

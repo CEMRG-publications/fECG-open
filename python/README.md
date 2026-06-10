@@ -117,25 +117,8 @@ python/
 
 ## Output Format
 
-Each recording produces a `.mat` file (MATLAB v7.3 / HDF5) containing one entry per
-60-second segment for each of the following variables:
-
-| Variable | Description |
-|---|---|
-| `final_file_names` | Source recording file name for each segment |
-| `final_start_times` | Start time of the segment (seconds) |
-| `final_og_ECG` | Original interpolated ECG (no preprocessing) |
-| `final_SQI` | Best bSQI achieved |
-| `final_chs_used` | Channel pair used to achieve the above bSQI |
-| `final_Om` | Extracted maternal ECG signal |
-| `final_Of` | Extracted fetal ECG signal |
-| `final_aECG` | Decomposed combined ECG signal |
-| `final_mbeats` | Indices of maternal R-peaks |
-| `final_fbeats` | Indices of fetal R-peaks |
-| `final_proc_time` | Cumulative processing time (seconds) |
-
-Files are readable by `MATLAB load()`, `h5py.File()`, and `hdf5storage.loadmat()`.
-
+For a description of all output variables, see [Output Format](../README.md#output-format)
+in the top-level README.
 
 ## Testing
 

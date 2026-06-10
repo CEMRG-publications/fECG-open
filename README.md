@@ -64,6 +64,70 @@ pip install ".[plot,test]"
 python pipeline.py -i data/inputs/test_library -o data/outputs/test_library
 ```
 
+## Algorithmic Parameters
+
+The following parameters are fixed in the current implementation. They can be
+modified directly in `pipeline.m` (MATLAB) or `pipeline.py` / `pipeline_fast.py`
+(Python) for custom configurations.
+
+| Parameter | Value | Unit |
+|-----------|:-----:|:----:|
+| **Recording and resampling** | | |
+| Number of channels | 4 | — |
+| Target sampling rate | 1000 | Hz |
+| **Signal quality index (bSQI)** | | |
+| bSQI window length | 4 | s |
+| bSQI evaluation interval | 1 | s |
+| Beat-matching tolerance for F1-based bSQI | 0.150 | s |
+| bSQI acceptance threshold | 0.8 | — |
+| **jQRS detector** | | |
+| jQRS energy threshold | 0.3 | — |
+| jQRS refractory period | 0.25 | s |
+| jQRS integration window size | 7 | samples |
+| jQRS segment window size | 15 | s |
+| **STFT / cepstral / SST** | | |
+| STFT Flattop window length (maternal) | 1000 | samples at 100 Hz |
+| STFT Flattop window length (fetal) | 600 | samples at 100 Hz |
+| STFT Flattop hop size | 20 | samples |
+| Internal signal rate fed into STFT | 100 | Hz |
+| STFT frequency resolution | 0.02 | cycles/sample |
+| SST coefficient magnitude threshold | 1e-6 | — |
+| Upper normalised frequency bound | 0.10 | — |
+| Lower normalised frequency bound | 0.005 | — |
+| Cepstral power exponent | 0.3 | — |
+| Number of SST sub-harmonics | 1 | — |
+| **Dynamic programming** | | |
+| DP ridge-extraction smoothness penalty | 50 (5 in refinement pass) | — |
+| DP beat-tracking smoothness penalty | 50 (5 in refinement pass) | — |
+| Half-width of α grid | 7 | — |
+| **Baseline removal** | | |
+| No-morphology median filter length | 51 | samples |
+| Long-window median filter length | 301 | samples |
+| Morphology-preserving median filter length | 101 | samples |
+| **Non-local median** | | |
+| Non-local median pool size | 10 | — |
+
+## Output Format
+
+Each recording produces a `.mat` file (MATLAB v7.3 / HDF5) containing one entry per
+60-second segment for each of the following variables:
+
+| Variable | Description |
+|---|---|
+| `final_file_names` | Source recording file name for each segment |
+| `final_start_times` | Start time of the segment (seconds) |
+| `final_og_ECG` | Original interpolated ECG (no preprocessing) |
+| `final_SQI` | Best bSQI achieved |
+| `final_chs_used` | Channel pair used to achieve the above bSQI |
+| `final_Om` | Extracted maternal ECG signal |
+| `final_Of` | Extracted fetal ECG signal |
+| `final_aECG` | Decomposed combined ECG signal |
+| `final_mbeats` | Indices of maternal R-peaks |
+| `final_fbeats` | Indices of fetal R-peaks |
+| `final_proc_time` | Cumulative processing time (seconds) |
+
+Files are readable by `MATLAB load()`, `h5py.File()`, and `hdf5storage.loadmat()`.
+
 ## Testing
 
 The Python library includes an automated test suite (58 tests) covering core signal processing modules and the full extraction pipeline:
