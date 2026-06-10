@@ -11,15 +11,15 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 ### Python
 
 - **Tested on:** Python 3.12.7
-- **Minimum version:** Python 3.7 (f-strings, `typing.Union`, `math.gcd` with 2 args)
+- **Minimum version:** Python 3.8 (f-strings, `typing.Union`, `math.gcd` with 2 args)
 - **Dependencies:**
 
 | Package | Version floor | Notes |
 |---|---|---|
-| `numpy` | `>=1.20` | Core numeric library |
+| `numpy` | `>=1.21` | Core numeric library |
 | `scipy` | `>=1.7` | Signal processing, interpolation, integration |
-| `numba` | `>=0.53` | JIT compilation for DP inner loops (`beat_simple`, `CurveExt_M`) |
-| `h5py` | `>=3.0` | HDF5 I/O (resume logic, output verification) |
+| `numba` | `>=0.56` | JIT compilation for DP inner loops (`beat_simple`, `CurveExt_M`) |
+| `h5py` | `>=3.3` | HDF5 I/O (resume logic, output verification) |
 | `hdf5storage` | `>=0.1.18` | MATLAB v7.3-compatible MAT file I/O |
 | `matplotlib` | *(optional)* | Used only in `pan_tompkin_revised.py` when `gr=1`; never called in the main pipeline |
 
@@ -43,11 +43,10 @@ pip install ".[plot,test]"
 
 Input: four binary channel files per recording (`<basename>.ch1` – `.ch4`, Monica DK format).
 
-To verify your installation, run the pipeline on the short test recording
-(10 segments, completes in a few minutes):
+To verify your installation, run the pipeline on the short test recording (2 segments):
 
 ```bash
-python pipeline.py -i data/inputs/test_library -o data/outputs/test_library
+python pipeline.py -i python/tests/test_recording -o python/tests/test_recording
 ```
 
 The full sample recording (92 segments) can be processed with:
@@ -67,7 +66,7 @@ sequential version and produces bit-identical outputs.
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
-    python pipeline_fast.py -i data/inputs/test_library -o data/outputs/test_library
+    python pipeline_fast.py -i data/inputs -o data/outputs
 ```
 
 Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning

@@ -47,21 +47,18 @@ pipeline
 To verify your installation, set the following paths in `pipeline.m` and run:
 
 ```matlab
-input_folder  = 'data/inputs/test_library';
-output_folder = 'data/outputs/test_library';
+input_folder  = '../python/tests/test_recording';
+output_folder = '../python/tests/test_recording';
 pipeline
 ```
 
-A sample 10-segment recording is provided in `data/inputs/test_library/` (`test.ch1` – `test.ch4`).
-
+A sample recording is provided in `data/inputs/` (`recording.ch1` – `recording.ch4`).
 The full sample recording (92 segments) can be processed by setting:
 
 ```matlab
 input_folder  = 'data/inputs';
 output_folder = 'data/outputs';
 ```
-
-A 92-segment recording is provided in `data/inputs/` (`recording.ch1` – `recording.ch4`).
 
 ## Library Structure
 
