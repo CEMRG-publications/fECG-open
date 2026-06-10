@@ -6,7 +6,7 @@ The log-Gaussian transition cost penalises deviations from the expected inter-be
 period derived from the instantaneous HR curve.
 
 Prepends 1000 silence frames for warm-up initialisation (matching MATLAB).
-The forward DP pass is JIT-compiled with Numba for ~10x speedup.
+The forward DP pass is JIT-compiled with Numba.
 
 Reference: 2007-06-19 Dan Ellis dpwe@ee.columbia.edu; 2016-08-13 Revised by Li Su.
 """
