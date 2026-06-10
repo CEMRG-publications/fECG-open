@@ -17,7 +17,7 @@ The library is available in two implementations:
 | | MATLAB | Python |
 |---|---|---|
 | Entry point | `matlab/pipeline.m` | `python/pipeline.py` |
-| Tested on | R2024b | Python 3.12 |
+| Tested on | R2024b | Python 3.8 |
 | Parallel pipeline | - | `python/pipeline_fast.py` |
 | Unit tests | - | 58 pytest tests |
 
