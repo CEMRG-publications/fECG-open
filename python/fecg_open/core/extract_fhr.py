@@ -3,13 +3,17 @@ extract_fhr: Extract the fetal heart-rate curve from a synchrosqueezed TFR.
 
 Note: MATLAB equivalent is named Extract_fhr (capitalised) in fecg_open/core/Extract_fhr.m (PEP 8 rename).
 
-Masks the TFR to the fetal HR band (1.0–3.2 Hz at basicTF.fs=100 Hz, i.e. 60–192 bpm)
-and applies dynamic-programming ridge extraction (CurveExt_M). The 1.0 Hz lower cutoff
-targets the typical fetal HR range (~1.5–2.7 Hz, 90–160 BPM), which lies above the
-typical maternal HR range (0.67–1.67 Hz, 40–100 BPM).
-
-These ranges can overlap in pathological conditions (e.g. fetal bradycardia <80 BPM,
-maternal tachycardia >100 BPM); the cutoffs are heuristics tuned for typical physiology.
+Two-stage frequency masking with different bounds:
+  1) Masking (0.4-3.2 Hz): rows of the full TFR outside this band are zeroed
+     to suppress DC drift/baseline wander (<0.4 Hz) and high-frequency noise
+     (>3.2 Hz). The retained band still contains maternal HR energy
+     (maternal band: 0.4-2.4 Hz).
+  2) DP ridge search (1.0-3.2 Hz): a 1.0-3.2 Hz submatrix of the masked TFR
+     is passed to CurveExt_M for dynamic-programming ridge tracking. The
+     lower bound is raised to 1.0 Hz (from the 0.4 Hz masking bound) to
+     exclude the maternal fundamental and its lower harmonics, which would
+     otherwise contaminate the fetal ridge estimate. Returned bin indices
+     are corrected back to full-TFR coordinates by adding round(1/basicTF.fr).
 """
 
 import numpy as np
@@ -20,10 +24,13 @@ def extract_fhr(rtfr_post, basicTF, dtw):
     """
     Extract fetal heart-rate curve from a synchrosqueezed TFR.
 
-    Isolates the fetal heart-rate frequency band (0.4 – 3.2 Hz) in the
-    reassigned time-frequency representation, then extracts the dominant
-    instantaneous frequency trajectory using the dynamic-programming curve
-    extractor CurveExt_M.
+    Stage 1 masks the TFR to 0.4-3.2 Hz (suppresses baseline wander and
+    high-frequency noise; the retained band still contains maternal HR
+    energy, 0.4-2.4 Hz). Stage 2 extracts the 1.0-3.2 Hz submatrix from the
+    masked TFR and passes it to CurveExt_M for dynamic-programming ridge
+    tracking; the 1.0 Hz lower bound excludes the maternal fundamental and
+    its lower harmonics. Returned bin indices are offset back to full-TFR
+    coordinates by adding round(1/basicTF.fr).
 
     The extracted curve HR is expressed in TFR frequency-bin units.
     Convert to BPM with:  bpm = basicTF['fs'] / HR / basicTF['fr'] * 60
