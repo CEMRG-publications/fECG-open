@@ -29,7 +29,7 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 
 ```bash
 git clone <repo-url>
-cd fECG_open
+cd fECG-open
 pip install ".[plot,test]"
 ```
 
@@ -46,13 +46,13 @@ Input: four binary channel files per recording (`<basename>.ch1` – `.ch4`, Mon
 To verify your installation, run the pipeline on the short test recording (2 segments):
 
 ```bash
-python pipeline.py -i python/tests/test_recording -o python/tests/test_recording
+python python/pipeline.py -i python/tests/test_recording -o python/tests/test_recording
 ```
 
 The full sample recording (92 segments) can be processed with:
 
 ```bash
-python pipeline.py -i data/inputs -o data/outputs
+python python/pipeline.py -i data/inputs -o data/outputs
 ```
 
 Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment
@@ -66,7 +66,7 @@ sequential version and produces bit-identical outputs.
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
-    python pipeline_fast.py -i data/inputs -o data/outputs
+    python python/pipeline_fast.py -i data/inputs -o data/outputs
 ```
 
 Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning

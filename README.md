@@ -61,7 +61,7 @@ pipeline
 
 ```bash
 pip install ".[plot,test]"
-python pipeline.py -i data/inputs -o data/outputs
+python python/pipeline.py -i data/inputs -o data/outputs
 ```
 
 ## Algorithmic Parameters

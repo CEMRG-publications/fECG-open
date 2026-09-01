@@ -47,8 +47,8 @@ pipeline
 To verify your installation, set the following paths in `pipeline.m` and run:
 
 ```matlab
-input_folder  = '../python/tests/test_recording';
-output_folder = '../python/tests/test_recording';
+input_folder  = 'python/tests/test_recording';
+output_folder = 'python/tests/test_recording';
 pipeline
 ```
 
