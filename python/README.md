@@ -37,10 +37,6 @@ pip install ".[plot,test]"
 
 ### Sequential pipeline
 
-```bash
-pip install ".[plot,test]"
-```
-
 Input: four binary channel files per recording (`<basename>.ch1` – `.ch4`, Monica DK format).
 
 To verify your installation, run the pipeline on the short test recording (2 segments):
