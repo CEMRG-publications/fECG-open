@@ -11,6 +11,7 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 ### Python
 
 - **Tested on:** Python 3.8.20
+- **Tested on:** Ubuntu 22.04.5 LTS (64-bit)
 - **Minimum version:** Python 3.8 (f-strings, `typing.Union`, `math.gcd` with 2 args)
 - **Dependencies:**
 
@@ -32,6 +33,8 @@ git clone <repo-url>
 cd fECG-open
 pip install ".[plot,test]"
 ```
+
+For exact reproduction of the reported results, install the pinned versions in `requirements-tested.txt`.
 
 ## Quick Start
 

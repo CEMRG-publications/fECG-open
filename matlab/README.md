@@ -11,6 +11,7 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 ### MATLAB
 
 - **Tested on:** MATLAB R2024b (24.2.0.2863752) Update 5
+- **Tested on:** Ubuntu 22.04.5 LTS (64-bit)
 - **Minimum version:** R2016a — required for `movmedian` (base MATLAB); all other language features are compatible with earlier releases
 - **Required toolboxes:**
   - Signal Processing Toolbox (`butter`, `filtfilt`, `resample`)
