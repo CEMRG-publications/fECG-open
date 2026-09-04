@@ -1,10 +1,10 @@
 # fECG-open tested environment
 # OS: Ubuntu 22.04.5 LTS (64-bit)
-# Python: 3.8.20
+# Python: 3.12.7
 h5py==3.11.0
-hdf5storage==0.1.19
-matplotlib==3.7.5
-numba==0.58.1
-numpy==1.24.4
-pytest==8.3.5
-scipy==1.10.1
+hdf5storage==0.2.2
+matplotlib==3.9.2
+numba==0.60.0
+numpy==1.26.4
+pytest==7.4.4
+scipy==1.13.1

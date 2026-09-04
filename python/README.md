@@ -10,7 +10,7 @@ Abdominal ECG electrodes pick up a mixture of two cardiac signals: the maternal 
 
 ### Python
 
-- **Tested on:** Python 3.8.20
+- **Tested on:** Python 3.12.7
 - **Tested on:** Ubuntu 22.04.5 LTS (64-bit)
 - **Minimum version:** Python 3.8 (f-strings, `typing.Union`, `math.gcd` with 2 args)
 - **Dependencies:**
