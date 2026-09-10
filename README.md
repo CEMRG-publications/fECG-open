@@ -21,7 +21,7 @@ The library is available in two implementations:
 | Parallel pipeline | - | `python/pipeline_fast.py` |
 | Unit tests | - | 58 pytest tests |
 
-The MATLAB library is the original implementation. The Python library is a 1:1 translation, validated to produce bit-identical outputs.
+The MATLAB library is the original implementation. The Python library is a 1:1 translation, validated to produce identical outputs within floating-point precision.
 
 ## Repository Structure
 

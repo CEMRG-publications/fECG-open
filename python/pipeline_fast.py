@@ -254,10 +254,22 @@ def main():
         dest="output_folder",
     )
 
+    parser.add_argument(
+        '-w',
+        '--workers',
+        type=int,
+        default=None,
+        help="Number of worker processes for the ProcessPoolExecutor "
+             "(default: min(multiprocessing.cpu_count(), 20))",
+        dest="workers",
+    )
+
     args = parser.parse_args()
 
     print(f"Input folder: {args.input_folder}")
     print(f"Output folder: {args.output_folder}")
+
+    n_workers = args.workers if args.workers is not None else _N_WORKERS
 
     input_folder = args.input_folder
     output_folder = args.output_folder
@@ -409,7 +421,7 @@ def main():
         # ========================= Decomposition Loop ============================
         # Use a single ProcessPoolExecutor for the entire file to avoid
         # repeated fork overhead
-        with ProcessPoolExecutor(max_workers=_N_WORKERS) as executor:
+        with ProcessPoolExecutor(max_workers=n_workers) as executor:
 
             pending_segments = []  # for pipelined refinement
 

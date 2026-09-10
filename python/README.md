@@ -54,22 +54,25 @@ The full sample recording (92 segments) can be processed with:
 python python/pipeline.py -i data/inputs -o data/outputs
 ```
 
-Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment
-waveforms and beat annotations. See the Output Format section for details.
+Output: one `.mat` file per recording (MATLAB v7.3 / HDF5) containing per-segment waveforms and beat annotations. See the Output Format section for details.
 
 ### Parallel pipeline
 
-`pipeline_fast.py` distributes beat-extraction and bSQI-scoring calls across CPU cores
-via `ProcessPoolExecutor`. The signal processing logic is otherwise identical to the
-sequential version and produces bit-identical outputs.
+`pipeline_fast.py` distributes beat-extraction and bSQI-scoring calls across CPU cores via `ProcessPoolExecutor`. The signal processing logic is otherwise identical to the sequential version and produces identical outputs within floating-point precision.
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
     python python/pipeline_fast.py -i data/inputs -o data/outputs
 ```
 
-Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning
-its own threads inside each worker process, which would oversubscribe the CPU.
+Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spawning its own threads inside each worker process, which would oversubscribe the CPU.
+
+By default, the worker count is set automatically. To override it, specify the desired number of worker processes (e.g., 8):
+
+​```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+    python python/pipeline_fast.py -i data/inputs -o data/outputs --workers 8
+​```
 
 ## Library Structure
 
@@ -115,15 +118,11 @@ python/
 
 ## Output Format
 
-For a description of all output variables, see [Output Format](../README.md#output-format)
-in the top-level README.
+For a description of all output variables, see [Output Format](../README.md#output-format) in the top-level README.
 
 ## Testing
 
-fECG-open includes an automated test suite covering the core signal
-processing modules and the full extraction pipeline. Tests are written
-using [pytest](https://pytest.org) and can be run from this directory
-with:
+fECG-open includes an automated test suite covering the core signal processing modules and the full extraction pipeline. Tests are written using [pytest](https://pytest.org) and can be run from this directory with:
 
     pytest tests/ -v
 
@@ -131,28 +130,13 @@ All 58 tests should pass. No additional configuration is required.
 
 ### What the suite covers
 
-The unit tests target the four main processing modules individually -
-`ECG_detrend`, `optimal_shrinkage`, `RRconstraint`, and `mbeats_modify`
-- using controlled synthetic signals with known expected outputs. Key
-behaviors verified include baseline removal aggressiveness across
-morphology modes (verified against the MATLAB original), beat boundary
-filtering, overlapping RR-interval constraint semantics, and shrinkage
-matrix validity.
+The unit tests target the four main processing modules individually - `ECG_detrend`, `optimal_shrinkage`, `RRconstraint`, and `mbeats_modify` - using controlled synthetic signals with known expected outputs. Key behaviors verified include baseline removal aggressiveness across morphology modes (verified against the MATLAB original), beat boundary filtering, overlapping RR-interval constraint semantics, and shrinkage matrix validity.
 
-The integration test runs the full pipeline (`pipeline.py`) on a short
-real abdominal ECG recording from a healthy volunteer (see
-`tests/test_recording/`). It verifies that the pipeline completes
-without error, produces a valid output file, and extracts a non-zero
-number of fetal beats. This test exercises the real processing path -
-shrinkage, beat extraction, and fetal ECG separation - on genuine
-cardiac signal rather than synthetic noise.
+The integration test runs the full pipeline (`pipeline.py`) on a short real abdominal ECG recording from a healthy volunteer (see `tests/test_recording/`). It verifies that the pipeline completes without error, produces a valid output file, and extracts a non-zero number of fetal beats. This test exercises the real processing path - shrinkage, beat extraction, and fetal ECG separation - on genuine cardiac signal rather than synthetic noise.
 
 ### Test data
 
-The test recording in `tests/test_recording/` is a 2-minute excerpt of
-the full volunteer recording provided in `./data/inputs/`. It is
-committed to the repository so that the integration test is
-self-contained and reproducible without access to the full dataset.
+The test recording in `tests/test_recording/` is a 2-minute excerpt of the full volunteer recording provided in `./data/inputs/`. It is committed to the repository so that the integration test is self-contained and reproducible without access to the full dataset.
 
 ## License
 
