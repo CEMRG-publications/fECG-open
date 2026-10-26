@@ -69,10 +69,26 @@ Setting `OMP_NUM_THREADS=1` and `OPENBLAS_NUM_THREADS=1` prevents BLAS from spaw
 
 By default, the worker count is set automatically. To override it, specify the desired number of worker processes (e.g., 8):
 
-​```bash
+```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
     python python/pipeline_fast.py -i data/inputs -o data/outputs --workers 8
-​```
+```
+
+### Interruption and restart
+
+Both scripts can continue after an interruption. Run the same command again.
+
+- `pipeline.py` saves the output file after every segment and continues after the last saved segment. The first segment after a restart can occasionally select a different fetal beat detector, as the beat count it carries over is the saved count (no padding), which is a few beats lower than in an uninterrupted run.
+- `pipeline_fast.py` saves each finished segment in a folder `<output>/<name>.partial/`. The final `<name>.mat` is written only when all segments are done, so a `.mat` file with the final name is always complete, and a recording with a final file is skipped. After an interruption, the script continues after the last stored segment, and it removes the folder once the final file is written.
+- If the input files or the settings change between the interrupted run and the restart, `pipeline_fast.py` stops and names the folder to delete.
+
+To inspect the results of an interrupted `pipeline_fast.py` run without computing anything:
+
+```bash
+python python/pipeline_fast.py -i data/inputs -o data/outputs --merge-partial
+```
+
+This writes `<name>_partial.mat` from the stored segments, with the extra variables `partial`, `n_segments` and `segment_indices`, and keeps the folder. It is meant for inspection only: the final output comes from a complete run.
 
 ## Library Structure
 
@@ -113,7 +129,8 @@ python/
         ├── matlab_smooth_wrapper.py     LOESS smooth matching MATLAB smooth(...,'loess')
         ├── MyReadDataq_32.py            Read little-endian int32 binary channel file
         ├── pan_tompkin_revised.py       Pan-Tompkins detector (adaptive threshold)
-        └── parsave_output_file.py       Save pipeline outputs to MATLAB v7.3 MAT-file
+        ├── parsave_output_file.py       Save pipeline outputs to MATLAB v7.3 MAT-file
+        └── segment_store.py             One file per segment, used by pipeline_fast.py to restart
 ```
 
 ## Output Format

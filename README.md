@@ -64,6 +64,9 @@ pip install ".[plot,test]"
 python python/pipeline.py -i data/inputs -o data/outputs
 ```
 
+If a run is interrupted, run the same command again to continue. See
+[Interruption and restart](python/README.md#interruption-and-restart).
+
 ## Algorithmic Parameters
 
 The following parameters are fixed in the current implementation. They can be
