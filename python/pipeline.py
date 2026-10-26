@@ -38,17 +38,31 @@ def _load_partial_results(path):
         flat = np.asarray(arr).flatten()
         return [float(np.asarray(x).flat[0]) for x in flat]
 
+    def _vector_list(key):
+        # loadmat returns every vector as a (1, N) row; the pipeline itself stores 1-D arrays
+        return [np.asarray(x).flatten() for x in _cell_list(key)]
+
+    def _og_ecg_list(key):
+        # loadmat returns one segment as a (1, 4) object array of (1, N) rows; the pipeline
+        # stores a (1,) object array holding a list of 4 one-dimensional channel arrays
+        segments = []
+        for seg in _cell_list(key):
+            wrapped = np.empty((1,), dtype=object)
+            wrapped[0] = [np.asarray(ch).flatten() for ch in np.asarray(seg).flatten()]
+            segments.append(wrapped)
+        return segments
+
     loaded = {
-        'final_file_names':  [str(s) for s in _cell_list('final_file_names')],
+        'final_file_names':  [str(np.asarray(s).flat[0]) for s in _cell_list('final_file_names')],
         'final_start_times': _row_list('final_start_times'),
-        'final_og_ECG':      _cell_list('final_og_ECG'),
+        'final_og_ECG':      _og_ecg_list('final_og_ECG'),
         'final_SQI':         _row_list('final_SQI'),
         'final_chs_used':    _cell_list('final_chs_used'),
-        'final_Om':          _cell_list('final_Om'),
-        'final_Of':          _cell_list('final_Of'),
-        'final_aECG':        _cell_list('final_aECG'),
-        'final_mbeats':      _cell_list('final_mbeats'),
-        'final_fbeats':      _cell_list('final_fbeats'),
+        'final_Om':          _vector_list('final_Om'),
+        'final_Of':          _vector_list('final_Of'),
+        'final_aECG':        _vector_list('final_aECG'),
+        'final_mbeats':      _vector_list('final_mbeats'),
+        'final_fbeats':      _vector_list('final_fbeats'),
         'final_proc_time':   _row_list('final_proc_time'),
     }
     return loaded
@@ -245,8 +259,10 @@ def main():
                     final_fbeats      = prev['final_fbeats']
                     final_proc_time   = prev['final_proc_time']
                     time_offset = final_proc_time[-1] if final_proc_time else 0.0
+                    # Number of saved (trimmed) fetal beats. An uninterrupted run uses the count
+                    # before the 1 s padding is trimmed, so this can be a few beats lower.
                     last_fbeats_len = float(len(final_fbeats[-1])) if final_fbeats else float('nan')
-                print(f'Resuming from segment {segment_offset} (output file exists)')
+                print(f'Found {segment_offset} saved segments in the output file')
             except Exception as _e:
                 print(f'Warning: cannot read existing output file ({_e}); reprocessing from start')
                 segment_offset = 0
@@ -325,6 +341,11 @@ def main():
         NUM_SEGMENTS = len(SEGMENT_TIME_RANGES) - 1
 
         if segment_offset > 0:
+            # Continue after the last saved segment. Skipped segments leave gaps, so the number
+            # of saved segments is not the index of the next segment: use the stored start times.
+            last_start = final_start_times[-1]
+            segment_offset = next((i for i in range(NUM_SEGMENTS)
+                                   if SEGMENT_TIME_RANGES[i] / fs > last_start), NUM_SEGMENTS)
             print(f'Resuming from segment {segment_offset} of {NUM_SEGMENTS}')
 
         # ========================= Decomposition Loop ===========================
