@@ -103,7 +103,7 @@ python/
     │   ├── synchrosqueeze1win.py        Synchrosqueezing reassignment
     │   ├── tftb_window.py               Flat-Top analysis window
     │   └── peak_detector/
-    │       ├── ecgsqi.py                Windowed F1 beat-agreement SQI
+    │       ├── ecgsqi.py                Windowed beat-agreement SQI (minimum of two matching proportions)
     │       ├── qrs_detect2.py           Pan-Tompkins QRS detector (offline)
     │       ├── run_qrsdet_by_seg_ali.py Segmented jqrs wrapper
     │       └── setDetectOptions.py      SQI/detector options dict builder

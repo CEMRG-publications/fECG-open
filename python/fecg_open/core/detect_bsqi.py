@@ -3,7 +3,7 @@ detect_bsqi.py: SQI-based QRS detector orchestrator. 1:1 translation of detect_b
 
 Computes a beat-by-beat Signal Quality Index (bSQI) for an ECG signal by comparing two
 independent QRS detectors: jqrs (energy-based, via run_qrsdet_by_seg_ali) and a provided
-reference annotation (acting as gqrs proxy). Returns the per-window F1 score.
+reference annotation (acting as gqrs proxy). Returns the per-window SQI (minimum of two matching proportions).
 
 INPUTS:
     data   — N×1 signal (ECG column vector)
@@ -14,7 +14,7 @@ INPUTS:
 
 OUTPUTS:
     qrs  — 1×K array, jqrs beat times (seconds)
-    sqi  — list, per-window SQI vector (F1 scores, 0–1), one entry per signal
+    sqi  — list, per-window SQI vector (0–1), one entry per signal
 
 Only the ECG-only path is implemented (no ABP/PPG/SV blocks).
 """

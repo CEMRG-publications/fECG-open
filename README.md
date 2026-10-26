@@ -78,8 +78,8 @@ modified directly in `pipeline.m` (MATLAB) or `pipeline.py` / `pipeline_fast.py`
 | **Signal quality index (bSQI)** | | |
 | bSQI window length | 4 | s |
 | bSQI evaluation interval | 1 | s |
-| Beat-matching tolerance for F1-based bSQI | 0.150 | s |
-| bSQI acceptance threshold | 0.8 | — |
+| Beat-matching tolerance for bSQI | 0.150 | s |
+| bSQI threshold (defined, not used to accept or reject segments) | 0.8 | — |
 | **jQRS detector** | | |
 | jQRS energy threshold | 0.3 | — |
 | jQRS refractory period | 0.25 | s |

@@ -12,10 +12,10 @@ function [opt] = setDetectOptions(varargin)
 %   varargin{1} - (optional struct) partial options struct.  Recognised
 %                 fields and their defaults:
 %                   SIZE_WIND             10   (even integer) SQI window, seconds
-%                   LG_MED                 3   (integer)      SQI median-filter half-width
-%                   REG_WIN                1   (integer)      jQRS regularisation window
-%                   THR                0.150   (numeric)      jQRS beat-detection threshold
-%                   SQI_THR              0.8   (0-1)          minimum bSQI to accept a segment
+%                   LG_MED                 3   (integer)      SQI sliding-minimum half-width
+%                   REG_WIN                1   (integer)      SQI evaluation stride (s)
+%                   THR                0.150   (numeric)      beat-matching tolerance (s)
+%                   SQI_THR              0.8   (0-1)          minimum bSQI to accept a segment. Not used by detect_bsqi or the pipelines
 %                   JQRS_THRESH          0.3   (numeric)      jQRS peak-detection threshold
 %                   JQRS_REFRAC         0.25   (numeric)      jQRS refractory period (s)
 %                   JQRS_INTWIN_SZ         7   (integer)      jQRS integration window size
@@ -65,11 +65,11 @@ function [opt] = setDetectOptions(varargin)
                         end
                     case {'THR', 'JQRS_THRESH', 'JQRS_REFRAC'}
                         if ~isnumeric(val)
-                            error('setDetectOptions:badValue', '%s: field should be an integer.', fn{f});
+                            error('setDetectOptions:badValue', '%s: field should be a number.', fn{f});
                         end
                     case {'SQI_THR'}
                         if ~isnumeric(val) || val < 0 || val > 1
-                            error('setDetectOptions:badValue', '%s: field should be an integer.', fn{f});
+                            error('setDetectOptions:badValue', '%s: field should be a number between 0 and 1.', fn{f});
                         end
                     case {'LG_MED', 'REG_WIN', 'JQRS_INTWIN_SZ', 'JQRS_WINDOW'}
                         if ~isnumeric(val) || round(val) ~= val

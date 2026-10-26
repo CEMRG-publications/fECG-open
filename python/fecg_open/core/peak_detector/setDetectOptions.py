@@ -31,7 +31,7 @@ def setDetectOptions(opt=None):
     THR : float
         Beat-matching tolerance (seconds). Default: 0.150.
     SQI_THR : float in [0, 1]
-        Minimum SQI to accept a signal as good quality. Default: 0.8.
+        Minimum SQI to accept a signal as good quality. Not used by detect_bsqi or the pipelines; only the range is checked. Default: 0.8.
     JQRS_THRESH : float
         jqrs energy threshold (fraction of signal max). Default: 0.3.
     JQRS_REFRAC : float

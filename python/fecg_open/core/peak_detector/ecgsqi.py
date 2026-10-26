@@ -1,5 +1,5 @@
 """
-ecgsqi.py: F1-based windowed beat-agreement SQI. 1:1 translation of ecgsqi.m.
+ecgsqi.py: Windowed beat-agreement SQI (minimum of two directional matching proportions). 1:1 translation of ecgsqi.m.
 """
 
 import numpy as np
@@ -50,7 +50,8 @@ def ecgsqi(ann1, ann2, THR, SIZE_WIND, REG_WIN, LG_MED, LG_REC, N_WIN):
     Returns
     -------
     sqi : ndarray
-        Smoothed F1 SQI values
+        SQI per window: minimum of the two directional matching proportions
+        (F1_1 and F1_2), after sliding-minimum smoothing. Not an F1-score.
     tsqi : ndarray
         Window start times
     """
@@ -114,11 +115,15 @@ def ecgsqi(ann1, ann2, THR, SIZE_WIND, REG_WIN, LG_MED, LG_REC, N_WIN):
 
         # MATLAB mean([]) = NaN; return NaN for empty windows so np.fmin below
         # can propagate the non-NaN value (matching MATLAB min(x, NaN) = x behaviour).
+        # F1_1: share of ann1 beats with exactly one ann2 beat within +/-THR (recall-like).
+        # F1_2: share of ann2 beats with exactly one ann1 beat within +/-THR (precision-like).
+        # The names follow ecgsqi.m. Neither value is an F1-score.
         F1_1[w] = np.mean(nj_in == 1) if len(nj_in) > 0 else float('nan')
         F1_2[w] = np.mean(ng_in == 1) if len(ng_in) > 0 else float('nan')
 
     # MATLAB: min(F1_1, NaN) = F1_1 (NaN-ignoring); MATLAB mean([]) returns NaN
     # Python: np.fmin matches MATLAB's NaN-ignoring semantics: fmin(x, NaN) = x
+    # Minimum of the two proportions, not the harmonic mean.
     F1 = np.fmin(F1_1, F1_2)
     F1[np.isnan(F1)] = 0
 

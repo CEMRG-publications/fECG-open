@@ -89,7 +89,7 @@ matlab/
     │   ├── synchrosqueeze1win.m       Synchrosqueezing reassignment
     │   ├── tftb_window.m              Flat-Top analysis window
     │   └── peak_detector/
-    │       ├── ecgsqi.m               Windowed F1 beat-agreement SQI
+    │       ├── ecgsqi.m               Windowed beat-agreement SQI (minimum of two matching proportions)
     │       ├── qrs_detect2.m          Pan-Tompkins QRS detector (offline)
     │       ├── run_qrsdet_by_seg_ali.m  Segmented jqrs wrapper
     │       └── setDetectOptions.m     SQI/detector options struct builder

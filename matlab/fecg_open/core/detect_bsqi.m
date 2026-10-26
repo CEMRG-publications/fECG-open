@@ -1,15 +1,15 @@
 % PURPOSE:  Compute a beat-by-beat Signal Quality Index (bSQI) for an ECG signal
 %           by comparing two independent QRS detectors: jqrs (energy-based, runs
 %           internally) and a provided reference annotation (acting as gqrs proxy).
-%           Returns the per-window F1 score between the two detector outputs.
+%           Returns the per-window SQI (minimum of two matching proportions) between the two detector outputs.
 % INPUTS:   data   — N×1 double, ECG signal (column vector)
 %           header — 1×1 cell {'ECG'}, signal type label
 %           fs     — scalar, sampling rate (Hz)
 %           opt    — struct: SQI window/threshold parameters (see setDetectOptions)
 %           beats  — 1×M integer, reference R-peak indices (gqrs proxy, in samples)
 % OUTPUTS:  qrs        — 1×K double, final beat times (s) after optional switching
-%           sqi        — 1×1 cell, per-window SQI vector (F1 scores, 0–1)
-% METHOD:   run_qrsdet_by_seg_ali (jqrs) → ecgsqi (F1 between jqrs and gqrs per window)
+%           sqi        — 1×1 cell, per-window SQI vector (0–1)
+% METHOD:   run_qrsdet_by_seg_ali (jqrs) → ecgsqi (agreement between jqrs and gqrs per window)
 function [qrs, sqi] = detect_bsqi(data, header, fs, opt, beats)
 
     % option setting

@@ -100,13 +100,14 @@ def main():
 
     # ============================== SQI Parameters ==============================
     # bSQI = beat-by-beat Signal Quality Index. Scores 0–1 how well two
-    # independent QRS detectors agree. A score > SQI_THR (0.8) is "good".
+    # independent QRS detectors agree. A score > SQI_THR (0.8) is considered "good".
+    # However, bSQI values are saved in final_SQI without filtering.
     opt = {
         'SIZE_WIND': 4,       # window size (s) for each bSQI evaluation window
-        'LG_MED': 0,          # median smoothing across adjacent SQI windows (0 = off)
+        'LG_MED': 0,          # sliding-minimum smoothing across adjacent SQI windows (0 = off)
         'REG_WIN': 1,         # how often (s) SQI is re-evaluated
         'THR': 0.150,         # tolerance (s) for calling two detected beats a match
-        'SQI_THR': 0.8,       # minimum SQI to consider a signal "good quality"
+        'SQI_THR': 0.8,       # minimum SQI to consider a signal "good quality". Not used by this pipeline
         'JQRS_THRESH': 0.3,   # jqrs energy threshold (relative to signal max)
         'JQRS_REFRAC': 0.25,  # jqrs refractory period (s) — minimum inter-beat gap
         'JQRS_INTWIN_SZ': 7,  # jqrs integration window size (samples at fs)

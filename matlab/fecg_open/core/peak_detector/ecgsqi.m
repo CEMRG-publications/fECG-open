@@ -1,4 +1,4 @@
-% PURPOSE:  Compute a windowed F1-based Signal Quality Index (SQI) measuring agreement
+% PURPOSE:  Compute a windowed Signal Quality Index (SQI) measuring agreement
 %           between two QRS annotation sequences. Higher SQI → detectors agree → clean signal.
 % INPUTS:   ann1     — K×1 double, beat times from detector 1 (seconds)
 %           ann2     — M×1 double, beat times from detector 2 (seconds)
@@ -10,12 +10,15 @@
 %           N_WIN    — scalar, total number of SQI windows
 % OUTPUTS:  sqi  — N_WIN×1 double, SQI per window (0=no agreement, 1=perfect)
 %           tsqi — N_WIN×1 double, window start times (s)
-% METHOD:   For each window, compute F1 = min(precision, recall) between ann1 and ann2
-%           using histc-based ±THR matching; optionally smooth with min-filter (LG_MED).
+% METHOD:   For each window, compute two proportions using histc-based ±THR matching.
+%           F1_1 = share of ann1 beats with exactly one ann2 beat within ±THR (recall-like).
+%           F1_2 = share of ann2 beats with exactly one ann1 beat within ±THR (precision-like).
+%           The SQI is min(F1_1, F1_2).
+%           Optionally smooth with a sliding minimum (LG_MED).
 function [sqi, tsqi] = ecgsqi(ann1, ann2, THR, SIZE_WIND, REG_WIN, LG_MED, LG_REC, N_WIN)
 
     if nargin < 7
-        error('ecgsqi:notEnoughArguments', 'ecgsqi.m received %d arguments, expected 7.', nargin)
+        error('ecgsqi:notEnoughArguments', 'ecgsqi.m received %d arguments, expected 8.', nargin)
     end
 
     xi = [ann1' - THR; ann1' + THR];
@@ -59,6 +62,7 @@ function [sqi, tsqi] = ecgsqi(ann1, ann2, THR, SIZE_WIND, REG_WIN, LG_MED, LG_RE
         F1_2(w) = mean(N_G(idx2) == 1);
     end
 
+    % Minimum of the two proportions, not the harmonic mean.
     F1 = min(F1_1, F1_2);
     F1(isnan(F1)) = 0;
 
