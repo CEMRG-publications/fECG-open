@@ -15,6 +15,10 @@ Optimisations applied (all preserve equivalence within floating-point precision)
 Usage:
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python pipeline_fast.py
 
+Interruption: finished segments are saved in <output>/<name>.partial/. Run the same
+command again to continue. To merge what exists without computing:
+    python pipeline_fast.py -i INPUT -o OUTPUT --merge-partial
+
 Requires: numpy, scipy, numba.  Install the package and its dependencies with: pip install ".[plot,test]"
 """
 
@@ -26,9 +30,12 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
 import argparse
+import shutil
+import sys
 
 # Import signal processing functions
 from fecg_open.utils.MyReadDataq_32 import MyReadDataq_32
+from fecg_open.utils import segment_store
 from fecg_open.utils.parsave_output_file import parsave_output_file
 from fecg_open.core.ECG_detrend import ECG_detrend
 from fecg_open.core.mbeats_extract_real import mbeats_extract_real
@@ -161,11 +168,8 @@ def _worker_score_single(args):
 
 def _collect_refined_segment(ps, og_ecg, file_name, fs, NUM_CHANNELS,
                               full_length, start_clock, time_offset,
-                              final_file_names, final_start_times, final_og_ECG,
-                              final_SQI, final_chs_used, final_Om, final_Of,
-                              final_aECG, final_mbeats, final_fbeats,
-                              final_proc_time):
-    """Collect refinement result and store segment outputs."""
+                              store_folder, fingerprint):
+    """Collect refinement result and save the segment to its own file."""
     seg_i = ps['seg_i']
     start_ind = ps['start_ind']
     end_ind = ps['end_ind']
@@ -201,24 +205,42 @@ def _collect_refined_segment(ps, og_ecg, file_name, fs, NUM_CHANNELS,
         mask_f = (fbeats >= start_ind_final) & (fbeats <= end_ind_final)
         fbeats = fbeats[mask_f] - pad_offset
 
-    final_file_names.append(file_name)
-    final_start_times.append((start_ind - 1) / fs)
-    og_ecg_obj = np.empty((1,), dtype=object)
-    og_ecg_obj[0] = og_ecg_seg
-    final_og_ECG.append(og_ecg_obj)
-    final_SQI.append(ps['bsqi_index_max'])
     _chs = ps['chs_used']
-    final_chs_used.append(np.array([[_chs[0], _chs[1]]], dtype=int))
-    final_Om.append(Om_real_t)
-    final_Of.append(Of_real_t)
-    final_aECG.append(x0_real_t)
-    final_mbeats.append(mbeats)
-    final_fbeats.append(fbeats)
-    final_proc_time.append(time.time() - start_clock + time_offset)
+    segment_store.write_segment(store_folder, seg_i, fingerprint, {
+        'file_name': file_name,
+        'start_time': (start_ind - 1) / fs,
+        'og_ECG': og_ecg_seg,
+        'SQI': ps['bsqi_index_max'],
+        'chs_used': np.array([[_chs[0], _chs[1]]], dtype=int),
+        'Om': Om_real_t,
+        'Of': Of_real_t,
+        'aECG': x0_real_t,
+        'mbeats': mbeats,
+        'fbeats': fbeats,
+        'proc_time': time.time() - start_clock + time_offset,
+        'last_fbeats_len': ps['last_fbeats_len'],
+    })
 
     seg_elapsed = time.time() - ps['seg_start']
     print(f'Segment {seg_i + 1}: {len(mbeats)} mbeats, {len(fbeats)} fbeats '
           f'({seg_elapsed:.1f}s)')
+
+def _merge_segments(stored, target_path, partial):
+    """
+    Write the stored segments to target_path. The file is written under a temporary
+    name and then renamed, so target_path is either complete or absent.
+    """
+    lists = segment_store.as_output_lists(stored)
+    extra = None
+    if partial:
+        indices = [i for i in sorted(stored) if stored[i] is not None]
+        extra = {'partial': np.array([[1]]),
+                 'n_segments': np.array([[len(indices)]]),
+                 'segment_indices': np.array([indices])}
+    tmp_path = target_path[:-len('.mat')] + '.tmp.mat'
+    parsave_output_file(tmp_path, **lists, extra=extra)
+    os.replace(tmp_path, target_path)
+
 
 def _make_filter_stage(order, wn, btype):
     """
@@ -260,6 +282,14 @@ def main():
         help="Number of worker processes for the ProcessPoolExecutor "
              "(default: min(multiprocessing.cpu_count(), 20))",
         dest="workers",
+    )
+
+    parser.add_argument(
+        '--merge-partial',
+        action='store_true',
+        help="Compute nothing. For each recording, merge the segment files that exist "
+             "into <name>_partial.mat (with a 'partial' flag) and keep the segment folder.",
+        dest="merge_partial",
     )
 
     args = parser.parse_args()
@@ -309,6 +339,10 @@ def main():
 
     alpha_ind = (np.arange(1, alphaN * 2 + 1) - alphaN) / alphaN
 
+    settings = {'opt': opt, 'basicTF': basicTF, 'advTF': advTF, 'cepR': cepR, 'P': P,
+                'alphaN': alphaN, 'num_med': num_med, 'num_med_l': num_med_l,
+                'num_med_s': num_med_s, 'num_nonlocal': num_nonlocal, 'fs': fs}
+
     # Replace b/a polynomial form with SOS to avoid filtfilt backward-pass overflow on
     # ch4 (Wn=0.00111, ill-conditioned)
     from scipy.signal import sosfiltfilt  # noqa: E402 (import kept local for clarity)
@@ -333,44 +367,49 @@ def main():
 
         start_clock = time.time()
 
-        matfile_name = db_file.replace('.ch1', '__pyfast.mat')
-        if os.path.isfile(os.path.join(output_folder, matfile_name)):
-            print(f'Output file for {matfile_name} already exists...')
+        file_name = db_file.replace('.ch1', '')
+        output_file_path = os.path.join(output_folder, file_name + '.mat')
+        if os.path.isfile(output_file_path):
+            print(f'Output file for {file_name} already exists, skipping.')
             continue
 
-        final_file_names = []
-        final_start_times = []
-        final_og_ECG = []
-        final_SQI = []
-        final_chs_used = []
-        final_Om = []
-        final_Of = []
-        final_aECG = []
-        final_mbeats = []
-        final_fbeats = []
-        final_proc_time = []
+        store_folder = segment_store.partial_folder(output_folder, file_name)
+        fingerprint = segment_store.make_fingerprint(input_folder, file_name,
+                                                     NUM_CHANNELS, settings)
+        try:
+            stored = segment_store.read_segments(store_folder, fingerprint)
+        except segment_store.FingerprintMismatch as error:
+            sys.exit(f'{error}. Delete {store_folder} to start this recording again.')
+
+        if args.merge_partial:
+            n_stored = sum(r is not None for r in stored.values())
+            if n_stored:
+                partial_path = os.path.join(output_folder, file_name + '_partial.mat')
+                _merge_segments(stored, partial_path, partial=True)
+                print(f'Merged {n_stored} stored segments into {partial_path}')
+            else:
+                print(f'No stored segments for {file_name}.')
+            continue
 
         og_ecg = [None] * (NUM_CHANNELS + 1)
         x_up_c = [None] * (NUM_CHANNELS + 1)
         x_up_c_real = [None] * (NUM_CHANNELS + 1)
 
-        file_name = db_file.replace('.ch1', '')
         print(f'Loading [{file_i + 1}/{len(DB_files)}]: {file_name}...')
 
-        output_file_path = os.path.join(output_folder, file_name + '.mat')
+        # Continue after the last stored segment (restart after an interruption).
+        # Later segment files, if any, are computed again and replaced.
         segment_offset = 0
+        while segment_offset in stored:
+            segment_offset += 1
         time_offset = 0
         last_fbeats_len = float('nan')
-
-        if os.path.isfile(output_file_path):
-            continue
-        else:
-            parsave_output_file(
-                output_file_path,
-                final_file_names, final_start_times, final_og_ECG,
-                final_SQI, final_chs_used, final_Om,
-                final_Of, final_aECG, final_mbeats,
-                final_fbeats, final_proc_time)
+        finished = [i for i in range(segment_offset) if stored[i] is not None]
+        if finished:
+            time_offset = stored[finished[-1]]['proc_time']
+            last_fbeats_len = stored[finished[-1]]['last_fbeats_len']
+        if segment_offset > 0:
+            print(f'Found {segment_offset} stored segments in {store_folder}')
 
         # ========================= Preprocessing =================================
         for ch_i in range(1, NUM_CHANNELS + 1):
@@ -594,6 +633,7 @@ def main():
 
                 if best is None:
                     print(f'No valid combination for segment {seg_i + 1}. Skipping...')
+                    segment_store.write_skipped(store_folder, seg_i, fingerprint)
                     continue
 
                 print(f'Found channels: {chs_used} w/ bSQI: {bsqi_index_max:6.3f} '
@@ -617,10 +657,7 @@ def main():
                     _collect_refined_segment(
                         ps, og_ecg, file_name, fs, NUM_CHANNELS,
                         full_length, start_clock, time_offset,
-                        final_file_names, final_start_times, final_og_ECG,
-                        final_SQI, final_chs_used, final_Om, final_Of,
-                        final_aECG, final_mbeats, final_fbeats,
-                        final_proc_time
+                        store_folder, fingerprint
                     )
                     last_fbeats_len = ps.get('last_fbeats_len', last_fbeats_len)
 
@@ -650,22 +687,19 @@ def main():
                 _collect_refined_segment(
                     ps, og_ecg, file_name, fs, NUM_CHANNELS,
                     full_length, start_clock, time_offset,
-                    final_file_names, final_start_times, final_og_ECG,
-                    final_SQI, final_chs_used, final_Om, final_Of,
-                    final_aECG, final_mbeats, final_fbeats,
-                    final_proc_time
+                    store_folder, fingerprint
                 )
                 last_fbeats_len = ps.get('last_fbeats_len', last_fbeats_len)
 
-        # Save all segments
-        if final_file_names:
-            parsave_output_file(
-                output_file_path,
-                final_file_names, final_start_times, final_og_ECG,
-                final_SQI, final_chs_used, final_Om,
-                final_Of, final_aECG, final_mbeats,
-                final_fbeats, final_proc_time)
-            print(f'Saved {len(final_file_names)} segments to {output_file_path}')
+        # Merge the segment files into the final file, then remove the segment folder
+        stored = segment_store.read_segments(store_folder, fingerprint)
+        n_stored = sum(r is not None for r in stored.values())
+        if n_stored:
+            _merge_segments(stored, output_file_path, partial=False)
+            shutil.rmtree(store_folder)
+            print(f'Saved {n_stored} segments to {output_file_path}')
+        else:
+            print(f'No valid segment for {file_name}; no output file written.')
 
         elapsed = time.time() - start_clock
         print(f'Total elapsed: {elapsed:.1f} seconds')

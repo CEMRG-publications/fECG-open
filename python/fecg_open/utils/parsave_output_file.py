@@ -106,7 +106,8 @@ def parsave_output_file(
     final_aECG,
     final_mbeats,
     final_fbeats,
-    final_proc_time
+    final_proc_time,
+    extra=None
 ):
     """
     Save SAVER pipeline results to a MATLAB v7.3-compatible MAT-file.
@@ -141,6 +142,8 @@ def parsave_output_file(
         Fetal R-peak sample indices (1-based) per segment.
     final_proc_time : list[float]
         Cumulative processing time per segment.
+    extra : dict, optional
+        Additional variables written next to the 11 standard ones.
     """
     output_dir = os.path.dirname(output_file_path)
     if output_dir and not os.path.exists(output_dir):
@@ -172,6 +175,8 @@ def parsave_output_file(
         'final_mbeats':    _to_cell(final_mbeats),
         'final_fbeats':    _to_cell(final_fbeats),
     }
+    if extra:
+        mdict.update(extra)     # for example {'partial': 1}
 
     hdf5storage.savemat(
         output_file_path,
