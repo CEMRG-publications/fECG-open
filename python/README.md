@@ -79,7 +79,7 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 ```
 python/
 ├── pipeline.py                          Main pipeline (sequential, entry point)
-├── pipeline_fast.py                     Parallel pipeline (validated — see pipeline_fast.md)
+├── pipeline_fast.py                     Parallel pipeline
 └── fecg_open/
     ├── core/                            Signal processing algorithms
     │   ├── beat_simple.py               DP beat tracker (Numba-JIT)

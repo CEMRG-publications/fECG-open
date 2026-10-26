@@ -1,10 +1,11 @@
 """
 pipeline_fast.py: CPU-optimised parallel fECG pipeline.
 
-Bit-identical output to the original pipeline.py (1:1 MATLAB translation)
-with ~13x speedup on a 20-core machine.
+Output identical to the sequential code (pipeline.py, a 1:1 MATLAB translation)
+within floating-point precision, with a 7.55x speedup using 16 workers on the
+92-minute example recording (see the manuscript).
 
-Optimisations applied (all preserve bit-exact equivalence):
+Optimisations applied (all preserve equivalence within floating-point precision):
   1. Fine-grained parallelism: 84 alpha x channel-pair tasks across all CPU cores
   2. Segment pipelining: refinement overlaps with next segment's search phase
   3. Numba JIT: beat_simple DP (63x faster), CurveExt_M DP
@@ -13,9 +14,6 @@ Optimisations applied (all preserve bit-exact equivalence):
 
 Usage:
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python pipeline_fast.py
-
-Validation:
-    python test_equivalence.py --validate --fast
 
 Requires: numpy, scipy, numba.  Install the package and its dependencies with: pip install ".[plot,test]"
 """
