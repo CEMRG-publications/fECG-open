@@ -411,7 +411,7 @@ for file_i = 1:length(DB_files)
         %        SAVER: de-shape STFT pipeline (fbeats_ma)
         %        Pan-Tompkins: classical energy-based QRS detector (fbeats_pan)
         %   5. Select the method returning more beats, bounded by 30% change vs. last segment
-        %   6. Build final morphology-preserving fECG template via nonlocal-median shrinkage
+        %   6. Build final fECG template via nonlocal-median shrinkage
         %   7. Fine-align beat indices to local signal peaks (align_beats_to_ecg)
         try
             [Of, Of_real] = ECG_shrinkage0(I2_orig, I2_orig_real, fbeats, 1.5, 0);
@@ -455,7 +455,7 @@ for file_i = 1:length(DB_files)
             last_fbeats_len = length(fbeats);
 
             % Final fECG template: nonlocal-median shrinkage groups beats by similar
-            % RRI and averages them, producing a morphology-preserving fECG waveform
+            % RRI and averages them, producing the final fECG waveform
             [~, Of_real] = ECG_shrinkage_median(I2_orig, I2_orig_real, fbeats, num_nonlocal, 1.5, 0);
 
             % ============================ POSTPROCESSING ============================

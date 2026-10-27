@@ -1,7 +1,7 @@
 % PURPOSE:  Extract fetal ECG R-peaks from a rough fECG residual signal, suppressing
 %           any residual maternal HR energy in the time-frequency plane before tracking.
 % INPUTS:   I2_orig      — 1×N double, rough fECG residual (for timing)
-%           I2_orig_morph— 1×N double, morphology-preserving fECG residual
+%           I2_orig_morph— 1×N double, fECG residual from the gently de-trended signal
 %           fs           — scalar, sampling rate (Hz), nominally 1000
 %           basicTF      — struct: STFT parameters (win compressed to 3/5 for fetal)
 %           advTF        — struct: SST thresholds
@@ -13,7 +13,7 @@
 %                          suppress maternal residue in the fetal TFR
 % OUTPUTS:  (same layout as mbeats_extract_real but for fetal beats)
 %           I2_orig      — polarity-corrected fECG residual
-%           I2_orig_morph— polarity-corrected morphology residual
+%           I2_orig_morph— polarity-corrected residual
 %           fbeats_p     — 1×K integer, fetal R-peak sample indices
 %           fbeats_q     — 1×K integer, fetal S-point sample indices
 %           R_amp / S_amp— scalar amplitudes

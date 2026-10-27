@@ -1,9 +1,9 @@
-% PURPOSE:  Reconstruct a morphology-preserving fECG template using nonlocal median
+% PURPOSE:  Reconstruct a fECG template using nonlocal median
 %           shrinkage. For each beat, the template is the median of that beat and its
 %           num_nonlocal nearest neighbours in RRI space — beats with similar inter-beat
-%           intervals share similar morphology and average out noise without blurring.
+%           intervals are assumed to have similar waveform shape, so the median reduces noise.
 % INPUTS:   x0            — 1×N double, de-trended fECG residual (for timing)
-%           x0_real       — 1×N double, morphology-preserving fECG residual
+%           x0_real       — 1×N double, fECG residual from the gently de-trended signal
 %           current_beats — 1×K integer, fetal R-peak sample indices
 %           num_nonlocal  — scalar, number of RRI-similar neighbours (10 in main)
 %           sigma_coeff   — scalar, noise-level multiplier (1.5 in main)

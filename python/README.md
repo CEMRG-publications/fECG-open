@@ -79,8 +79,8 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 Both scripts can continue after an interruption. Run the same command again.
 
 - `pipeline.py` saves the output file after every segment and continues after the last saved segment. The first segment after a restart can occasionally select a different fetal beat detector, as the beat count it carries over is the saved count (no padding), which is a few beats lower than in an uninterrupted run.
-- `pipeline_fast.py` saves each finished segment in a folder `<output>/<name>.partial/`. The final `<name>.mat` is written only when all segments are done, so a `.mat` file with the final name is always complete, and a recording with a final file is skipped. After an interruption, the script continues after the last stored segment, and it removes the folder once the final file is written.
-- If the input files or the settings change between the interrupted run and the restart, `pipeline_fast.py` stops and names the folder to delete.
+- `pipeline_fast.py` saves each finished segment in a folder `<output>/<name>.partial/`. The final `<name>.mat` is written only when all segments are done, so a `.mat` file with the final name always contains all successfully processed segments, and a recording with a final file is skipped. After an interruption, the script continues from the first segment without a stored file, and it removes the folder once the final file is written.
+- If the sizes of the input files or the settings change between the interrupted run and the restart, `pipeline_fast.py` stops and names the folder to delete.
 
 To inspect the results of an interrupted `pipeline_fast.py` run without computing anything:
 

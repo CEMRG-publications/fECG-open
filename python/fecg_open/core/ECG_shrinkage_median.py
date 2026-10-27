@@ -1,10 +1,10 @@
 """
-ECG_shrinkage_median: Reconstruct a morphology-preserving fECG template using
+ECG_shrinkage_median: Reconstruct a fECG template using
 nonlocal median shrinkage.
 
 For each beat, the template is the median of that beat and its num_nonlocal nearest
-neighbours in RRI space — beats with similar inter-beat intervals share similar
-morphology and average out noise without blurring.
+neighbours in RRI space — beats with similar inter-beat intervals are assumed to have similar
+waveform shape, so the median reduces noise.
 
 Method: Beat matrix + SVD optimal-shrinkage → nonlocal median template per beat →
         raised-cosine overlap-add reconstruction.
